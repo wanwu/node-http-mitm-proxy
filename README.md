@@ -1,5 +1,7 @@
 # HTTP MITM Proxy
 
+> forked from joeferner/node-http-mitm-proxy
+
 HTTP Man In The Middle (MITM) Proxy written in node.js. Supports capturing and modifying the request and response data.
 
 [![NPM version](http://img.shields.io/npm/v/http-mitm-proxy.svg)](https://www.npmjs.com/package/http-mitm-proxy)
@@ -12,9 +14,11 @@ HTTP Man In The Middle (MITM) Proxy written in node.js. Supports capturing and m
 `npm install --save http-mitm-proxy`
 
 ## Node.js Compatibility
+
 The library should work starting Node.js 8.x, but testing is only expected for currently supported LTS versions of Node.js starting Node.js 12.x . use on your own risk with non LTS Node.js versions.
 
 ## Typescript
+
 type definitions are now included in this project, no extra steps required.
 
 # Example
@@ -25,16 +29,18 @@ This example will modify any search results coming from google and replace all t
 var Proxy = require('http-mitm-proxy');
 var proxy = Proxy();
 
-proxy.onError(function(ctx, err) {
+proxy.onError(function (ctx, err) {
   console.error('proxy error:', err);
 });
 
-proxy.onRequest(function(ctx, callback) {
-  if (ctx.clientToProxyRequest.headers.host == 'www.google.com'
-    && ctx.clientToProxyRequest.url.indexOf('/search') == 0) {
+proxy.onRequest(function (ctx, callback) {
+  if (
+    ctx.clientToProxyRequest.headers.host == 'www.google.com' &&
+    ctx.clientToProxyRequest.url.indexOf('/search') == 0
+  ) {
     ctx.use(Proxy.gunzip);
 
-    ctx.onResponseData(function(ctx, chunk, callback) {
+    ctx.onResponseData(function (ctx, chunk, callback) {
       chunk = new Buffer(chunk.toString().replace(/<h3.*?<\/h3>/g, '<h3>Pwned!</h3>'));
       return callback(null, chunk);
     });
@@ -54,60 +60,61 @@ Using node-forge allows the automatic generation of SSL certificates within the 
 # API
 
 ## Proxy
- * [listen(options)](#proxy_listen)
- * [close](#proxy_close)
- * [onError(fn)](#proxy_onError)
- * [onCertificateRequired](#proxy_onCertificateRequired)
- * [onCertificateMissing](#proxy_onCertificateMissing)
- * [onRequest(fn)](#proxy_onRequest)
- * [onRequestData(fn)](#proxy_onRequestData)
- * [onRequestEnd(fn)](#proxy_onRequestEnd)
- * [onResponse(fn)](#proxy_onResponse)
- * [onResponseData(fn)](#proxy_onResponseData)
- * [onResponseEnd(fn)](#proxy_onResponseEnd)
- * [onWebSocketConnection(fn)](#proxy_onWebSocketConnection)
- * [onWebSocketSend(fn)](#proxy_onWebSocketSend)
- * [onWebSocketMessage(fn)](#proxy_onWebSocketMessage)
- * [onWebSocketFrame(fn)](#proxy_onWebSocketFrame)
- * [onWebSocketError(fn)](#proxy_onWebSocketError)
- * [onWebSocketClose(fn)](#proxy_onWebSocketClose)
- * [use(fn)](#proxy_use)
+
+- [listen(options)](#proxy_listen)
+- [close](#proxy_close)
+- [onError(fn)](#proxy_onError)
+- [onCertificateRequired](#proxy_onCertificateRequired)
+- [onCertificateMissing](#proxy_onCertificateMissing)
+- [onRequest(fn)](#proxy_onRequest)
+- [onRequestData(fn)](#proxy_onRequestData)
+- [onRequestEnd(fn)](#proxy_onRequestEnd)
+- [onResponse(fn)](#proxy_onResponse)
+- [onResponseData(fn)](#proxy_onResponseData)
+- [onResponseEnd(fn)](#proxy_onResponseEnd)
+- [onWebSocketConnection(fn)](#proxy_onWebSocketConnection)
+- [onWebSocketSend(fn)](#proxy_onWebSocketSend)
+- [onWebSocketMessage(fn)](#proxy_onWebSocketMessage)
+- [onWebSocketFrame(fn)](#proxy_onWebSocketFrame)
+- [onWebSocketError(fn)](#proxy_onWebSocketError)
+- [onWebSocketClose(fn)](#proxy_onWebSocketClose)
+- [use(fn)](#proxy_use)
 
 ## Context
 
- Context functions only effect the current request/response. For example you may only want to gunzip requests
- made to a particular host.
+Context functions only effect the current request/response. For example you may only want to gunzip requests
+made to a particular host.
 
- * isSSL: boolean,
- * clientToProxyRequest: [IncomingMessage](https://nodejs.org/api/http.html#http_http_incomingmessage),
- * proxyToClientResponse: [ServerResponse](https://nodejs.org/api/http.html#http_class_http_serverresponse),
- * proxyToServerRequest: [ClientRequest](https://nodejs.org/api/http.html#http_class_http_clientrequest),
- * serverToProxyResponse: [IncomingMessage](https://nodejs.org/api/http.html#http_http_incomingmessage),
- * [onError(fn)](#proxy_onError)
- * [onRequest(fn)](#proxy_onRequest)
- * [onRequestData(fn)](#proxy_onRequestData)
- * [onRequestEnd(fn)](#proxy_onRequestEnd)
- * [addRequestFilter(fn)](#context_addRequestFilter)
- * [onResponse(fn)](#proxy_onResponse)
- * [onResponseData(fn)](#proxy_onResponseData)
- * [onResponseEnd(fn)](#proxy_onResponseEnd)
- * [addResponseFilter(fn)](#context_addResponseFilter)
- * [use(mod)](#proxy_use)
+- isSSL: boolean,
+- clientToProxyRequest: [IncomingMessage](https://nodejs.org/api/http.html#http_http_incomingmessage),
+- proxyToClientResponse: [ServerResponse](https://nodejs.org/api/http.html#http_class_http_serverresponse),
+- proxyToServerRequest: [ClientRequest](https://nodejs.org/api/http.html#http_class_http_clientrequest),
+- serverToProxyResponse: [IncomingMessage](https://nodejs.org/api/http.html#http_http_incomingmessage),
+- [onError(fn)](#proxy_onError)
+- [onRequest(fn)](#proxy_onRequest)
+- [onRequestData(fn)](#proxy_onRequestData)
+- [onRequestEnd(fn)](#proxy_onRequestEnd)
+- [addRequestFilter(fn)](#context_addRequestFilter)
+- [onResponse(fn)](#proxy_onResponse)
+- [onResponseData(fn)](#proxy_onResponseData)
+- [onResponseEnd(fn)](#proxy_onResponseEnd)
+- [addResponseFilter(fn)](#context_addResponseFilter)
+- [use(mod)](#proxy_use)
 
 ## WebSocket Context
 
 The context available in websocket handlers is a bit different
 
- * isSSL: boolean,
- * clientToProxyWebSocket: [WebSocket](https://github.com/websockets/ws/blob/master/doc/ws.md#class-wswebsocket),
- * proxyToServerWebSocket: [WebSocket](https://github.com/websockets/ws/blob/master/doc/ws.md#class-wswebsocket),
- * [onWebSocketConnection(fn)](#proxy_onWebSocketConnection)
- * [onWebSocketSend(fn)](#proxy_onWebSocketSend)
- * [onWebSocketMessage(fn)](#proxy_onWebSocketMessage)
- * [onWebSocketFrame(fn)](#proxy_onWebSocketFrame)
- * [onWebSocketError(fn)](#proxy_onWebSocketError)
- * [onWebSocketClose(fn)](#proxy_onWebSocketClose)
- * [use(mod)](#proxy_use)
+- isSSL: boolean,
+- clientToProxyWebSocket: [WebSocket](https://github.com/websockets/ws/blob/master/doc/ws.md#class-wswebsocket),
+- proxyToServerWebSocket: [WebSocket](https://github.com/websockets/ws/blob/master/doc/ws.md#class-wswebsocket),
+- [onWebSocketConnection(fn)](#proxy_onWebSocketConnection)
+- [onWebSocketSend(fn)](#proxy_onWebSocketSend)
+- [onWebSocketMessage(fn)](#proxy_onWebSocketMessage)
+- [onWebSocketFrame(fn)](#proxy_onWebSocketFrame)
+- [onWebSocketError(fn)](#proxy_onWebSocketError)
+- [onWebSocketClose(fn)](#proxy_onWebSocketClose)
+- [use(mod)](#proxy_use)
 
 <a name="proxy"/>
 
@@ -119,21 +126,21 @@ The context available in websocket handlers is a bit different
 
 Starts the proxy listening on the given port.
 
-__Arguments__
+**Arguments**
 
- * options - An object with the following options:
-  * port - The port or named socket to listen on (default: 8080).
-  * host - The hostname or local address to listen on (default: 'localhost'). Pass '::' to listen on all IPv4/IPv6 interfaces.
-  * sslCaDir - Path to the certificates cache directory (default: process.cwd() + '/.http-mitm-proxy')
-  * keepAlive - enable [HTTP persistent connection](https://en.wikipedia.org/wiki/HTTP_persistent_connection)
-  * timeout - The number of milliseconds of inactivity before a socket is presumed to have timed out. Defaults to no timeout.
-  * httpAgent - The [http.Agent](https://nodejs.org/api/http.html#http_class_http_agent) to use when making http requests. Useful for chaining proxys. (default: internal Agent)
-  * httpsAgent - The [https.Agent](https://nodejs.org/api/https.html#https_class_https_agent) to use when making https requests. Useful for chaining proxys. (default: internal Agent)
-  * forceSNI - force use of [SNI](https://en.wikipedia.org/wiki/Server_Name_Indication) by the client. Allow node-http-mitm-proxy to handle all HTTPS requests with a single internal server.
-  * httpsPort - The port or named socket for https server to listen on. _(forceSNI must be enabled)_
-  * forceChunkedRequest - Setting this option will remove the content-length from the proxy to server request, forcing chunked encoding.
+- options - An object with the following options:
+- port - The port or named socket to listen on (default: 8080).
+- host - The hostname or local address to listen on (default: 'localhost'). Pass '::' to listen on all IPv4/IPv6 interfaces.
+- sslCaDir - Path to the certificates cache directory (default: process.cwd() + '/.http-mitm-proxy')
+- keepAlive - enable [HTTP persistent connection](https://en.wikipedia.org/wiki/HTTP_persistent_connection)
+- timeout - The number of milliseconds of inactivity before a socket is presumed to have timed out. Defaults to no timeout.
+- httpAgent - The [http.Agent](https://nodejs.org/api/http.html#http_class_http_agent) to use when making http requests. Useful for chaining proxys. (default: internal Agent)
+- httpsAgent - The [https.Agent](https://nodejs.org/api/https.html#https_class_https_agent) to use when making https requests. Useful for chaining proxys. (default: internal Agent)
+- forceSNI - force use of [SNI](https://en.wikipedia.org/wiki/Server_Name_Indication) by the client. Allow node-http-mitm-proxy to handle all HTTPS requests with a single internal server.
+- httpsPort - The port or named socket for https server to listen on. _(forceSNI must be enabled)_
+- forceChunkedRequest - Setting this option will remove the content-length from the proxy to server request, forcing chunked encoding.
 
-__Example__
+**Example**
 
     proxy.listen({ port: 80 });
 
@@ -143,7 +150,7 @@ __Example__
 
 Stops the proxy listening.
 
-__Example__
+**Example**
 
     proxy.close();
 
@@ -153,11 +160,11 @@ __Example__
 
 Adds a function to the list of functions to get called if an error occures.
 
-__Arguments__
+**Arguments**
 
- * fn(ctx, err, errorKind) - The function to be called on an error.
+- fn(ctx, err, errorKind) - The function to be called on an error.
 
-__Example__
+**Example**
 
     proxy.onError(function(ctx, err, errorKind) {
       // ctx may be null
@@ -173,12 +180,12 @@ Allows the default certificate name/path computation to be overwritten.
 
 The default behavior expects `keys/{hostname}.pem` and `certs/{hostname}.pem` files to be at `self.sslCaDir`.
 
-__Arguments__
+**Arguments**
 
- * hostname - Requested hostname.
- * callback - The function to be called when certificate files' path were already computed.
+- hostname - Requested hostname.
+- callback - The function to be called when certificate files' path were already computed.
 
-__Example 1__
+**Example 1**
 
     proxy.onCertificateRequired = function(hostname, callback) {
       return callback(null, {
@@ -187,7 +194,7 @@ __Example 1__
       });
     };
 
-__Example 2: Wilcard certificates__
+**Example 2: Wilcard certificates**
 
     proxy.onCertificateRequired = function(hostname, callback) {
       return callback(null, {
@@ -197,23 +204,22 @@ __Example 2: Wilcard certificates__
       });
     };
 
-
 <a name="proxy_onCertificateMissing" />
 
 ### proxy.onCertificateMissing = function(ctx, files, callback)
 
 Allows you to handle missing certificate files for current request, for example, creating them on the fly.
 
-__Arguments__
+**Arguments**
 
-* ctx - Context with the following properties
- * hostname - The hostname which requires certificates
- * data.keyFileExists - Whether key file exists or not
- * data.certFileExists - Whether certificate file exists or not
-* files - missing files names (`files.keyFile`, `files.certFile` and optional `files.hosts`)
-* callback - The function to be called to pass certificate data back (`keyFileData` and `certFileData`)
+- ctx - Context with the following properties
+- hostname - The hostname which requires certificates
+- data.keyFileExists - Whether key file exists or not
+- data.certFileExists - Whether certificate file exists or not
+- files - missing files names (`files.keyFile`, `files.certFile` and optional `files.hosts`)
+- callback - The function to be called to pass certificate data back (`keyFileData` and `certFileData`)
 
-__Example 1__
+**Example 1**
 
     proxy.onCertificateMissing = function(ctx, files, callback) {
       console.log('Looking for "%s" certificates',   ctx.hostname);
@@ -229,7 +235,7 @@ __Example 1__
       // });
       };
 
-__Example 2: Wilcard certificates__
+**Example 2: Wilcard certificates**
 
     proxy.onCertificateMissing = function(ctx, files, callback) {
       return callback(null, {
@@ -239,18 +245,17 @@ __Example 2: Wilcard certificates__
       });
     };
 
-
 <a name="proxy_onRequest" />
 
 ### proxy.onRequest(fn) or ctx.onRequest(fn)
 
 Adds a function to get called at the beginning of a request.
 
-__Arguments__
+**Arguments**
 
- * fn(ctx, callback) - The function that gets called on each request.
+- fn(ctx, callback) - The function that gets called on each request.
 
-__Example__
+**Example**
 
     proxy.onRequest(function(ctx, callback) {
       console.log('REQUEST:', ctx.clientToProxyRequest.url);
@@ -263,11 +268,11 @@ __Example__
 
 Adds a function to get called for each request data chunk (the body).
 
-__Arguments__
+**Arguments**
 
- * fn(ctx, chunk, callback) - The function that gets called for each data chunk.
+- fn(ctx, chunk, callback) - The function that gets called for each data chunk.
 
-__Example__
+**Example**
 
     proxy.onRequestData(function(ctx, chunk, callback) {
       console.log('REQUEST DATA:', chunk.toString());
@@ -280,14 +285,14 @@ __Example__
 
 Adds a function to get called when all request data (the body) was sent.
 
-__Arguments__
+**Arguments**
 
- * fn(ctx, callback) - The function that gets called when all request data (the body) was sent.
+- fn(ctx, callback) - The function that gets called when all request data (the body) was sent.
 
-__Example__
+**Example**
 
     var chunks = [];
-    
+
     proxy.onRequestData(function(ctx, chunk, callback) {
       chunks.push(chunk);
       return callback(null, chunk);
@@ -304,11 +309,11 @@ __Example__
 
 Adds a function to get called at the beginning of the response.
 
-__Arguments__
+**Arguments**
 
- * fn(ctx, callback) - The function that gets called on each response.
+- fn(ctx, callback) - The function that gets called on each response.
 
-__Example__
+**Example**
 
     proxy.onResponse(function(ctx, callback) {
       console.log('BEGIN RESPONSE');
@@ -321,11 +326,11 @@ __Example__
 
 Adds a function to get called for each response data chunk (the body).
 
-__Arguments__
+**Arguments**
 
- * fn(ctx, chunk, callback) - The function that gets called for each data chunk.
+- fn(ctx, chunk, callback) - The function that gets called for each data chunk.
 
-__Example__
+**Example**
 
     proxy.onResponseData(function(ctx, chunk, callback) {
       console.log('RESPONSE DATA:', chunk.toString());
@@ -338,11 +343,11 @@ __Example__
 
 Adds a function to get called when the proxy request to server has ended.
 
-__Arguments__
+**Arguments**
 
- * fn(ctx, callback) - The function that gets called when the proxy request to server as ended.
+- fn(ctx, callback) - The function that gets called when the proxy request to server as ended.
 
-__Example__
+**Example**
 
     proxy.onResponseEnd(function(ctx, callback) {
       console.log('RESPONSE END');
@@ -355,11 +360,11 @@ __Example__
 
 Adds a function to get called at the beginning of websocket connection
 
-__Arguments__
+**Arguments**
 
- * fn(ctx, callback) - The function that gets called for each data chunk.
+- fn(ctx, callback) - The function that gets called for each data chunk.
 
-__Example__
+**Example**
 
     proxy.onWebSocketConnection(function(ctx, callback) {
       console.log('WEBSOCKET CONNECT:', ctx.clientToProxyWebSocket.upgradeReq.url);
@@ -372,11 +377,11 @@ __Example__
 
 Adds a function to get called for each WebSocket message sent by the client.
 
-__Arguments__
+**Arguments**
 
- * fn(ctx, message, flags, callback) - The function that gets called  for each WebSocket message sent by the client.
+- fn(ctx, message, flags, callback) - The function that gets called for each WebSocket message sent by the client.
 
-__Example__
+**Example**
 
     proxy.onWebSocketSend(function(ctx, message, flags, callback) {
       console.log('WEBSOCKET SEND:', ctx.clientToProxyWebSocket.upgradeReq.url, message);
@@ -389,11 +394,11 @@ __Example__
 
 Adds a function to get called for each WebSocket message received from the server.
 
-__Arguments__
+**Arguments**
 
- * fn(ctx, message, flags, callback) - The function that gets called for each WebSocket message received from the server.
+- fn(ctx, message, flags, callback) - The function that gets called for each WebSocket message received from the server.
 
-__Example__
+**Example**
 
     proxy.onWebSocketMessage(function(ctx, message, flags, callback) {
       console.log('WEBSOCKET MESSAGE:', ctx.clientToProxyWebSocket.upgradeReq.url, message);
@@ -406,11 +411,11 @@ __Example__
 
 Adds a function to get called for each WebSocket frame exchanged (`message`, `ping` or `pong`).
 
-__Arguments__
+**Arguments**
 
- * fn(ctx, type, fromServer, data, flags, callback) - The function that gets called for each WebSocket frame exchanged.
+- fn(ctx, type, fromServer, data, flags, callback) - The function that gets called for each WebSocket frame exchanged.
 
-__Example__
+**Example**
 
     proxy.onWebSocketFrame(function(ctx, type, fromServer, data, flags, callback) {
       console.log('WEBSOCKET FRAME ' + type + ' received from ' + (fromServer ? 'server' : 'client'), ctx.clientToProxyWebSocket.upgradeReq.url, data);
@@ -423,27 +428,27 @@ __Example__
 
 Adds a function to the list of functions to get called if an error occures in WebSocket.
 
-__Arguments__
+**Arguments**
 
- * fn(ctx, err) - The function to be called on an error in WebSocket.
+- fn(ctx, err) - The function to be called on an error in WebSocket.
 
-__Example__
+**Example**
 
     proxy.onWebSocketError(function(ctx, err) {
       console.log('WEBSOCKET ERROR:', ctx.clientToProxyWebSocket.upgradeReq.url, err);
     });
- 
+
 <a name="proxy_onWebSocketClose" />
 
 ### proxy.onWebSocketClose(fn) or ctx.onWebSocketClose(fn)
 
 Adds a function to get called when a WebSocket connection is closed
 
-__Arguments__
+**Arguments**
 
- * fn(ctx, code, message, callback) - The function that gets when a WebSocket is closed.
+- fn(ctx, code, message, callback) - The function that gets when a WebSocket is closed.
 
-__Example__
+**Example**
 
     proxy.onWebSocketClose(function(ctx, code, message, callback) {
       console.log('WEBSOCKET CLOSED BY '+(ctx.closedByServer ? 'SERVER' : 'CLIENT'), ctx.clientToProxyWebSocket.upgradeReq.url, code, message);
@@ -456,11 +461,11 @@ __Example__
 
 Adds a module into the proxy. Modules encapsulate multiple life cycle processing functions into one object.
 
-__Arguments__
+**Arguments**
 
- * module - The module to add. Modules contain a hash of functions to add.
+- module - The module to add. Modules contain a hash of functions to add.
 
-__Example__
+**Example**
 
     proxy.use({
       onError: function(ctx, err) { },
@@ -478,6 +483,7 @@ __Example__
     });
 
 node-http-mitm-proxy provide some ready to use modules:
+
 - `Proxy.gunzip` Gunzip response filter (uncompress gzipped content before onResponseData and compress back after)
 - `Proxy.wildcard` Generates wilcard certificates by default (so less certificates are generated)
 
@@ -491,11 +497,11 @@ node-http-mitm-proxy provide some ready to use modules:
 
 Adds a stream into the request body stream.
 
-__Arguments__
+**Arguments**
 
- * stream - The read/write stream to add in the request body stream.
+- stream - The read/write stream to add in the request body stream.
 
-__Example__
+**Example**
 
     ctx.addRequestFilter(zlib.createGunzip());
 
@@ -505,11 +511,11 @@ __Example__
 
 Adds a stream into the response body stream.
 
-__Arguments__
+**Arguments**
 
- * stream - The read/write stream to add in the response body stream.
+- stream - The read/write stream to add in the response body stream.
 
-__Example__
+**Example**
 
     ctx.addResponseFilter(zlib.createGunzip());
 
@@ -540,4 +546,3 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
-
